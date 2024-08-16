@@ -1,0 +1,10 @@
+accelerate
+bitsandbytes
+litserve
+openai
+peft
+Pillow
+sentencepiece
+timm
+torch
+transformers
