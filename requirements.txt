@@ -1,6 +1,7 @@
 accelerate
 bitsandbytes
 decord
+flash_attn
 litserve
 openai
 peft
