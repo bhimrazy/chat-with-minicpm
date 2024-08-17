@@ -3,7 +3,7 @@ import streamlit as st
 from src.api import client
 from src.config import MODEL, SYSTEM_MESSAGE
 from src.ui_components import file_upload, header
-from src.utils import prepare_content_with_images
+from src.utils import prepare_content_with_images, is_image, is_video
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
 VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".flv", ".wmv", ".webm", ".m4v"}
@@ -66,8 +66,14 @@ def main():
                 else prompt
             )
             if file_object:
-                caption = "Thumbnail of Video" if len(file_object) > 1 else ""
-                st.image(file_object[0]["image_url"]["url"], width=200, caption=caption)
+                if is_image(uploaded_file.name):
+                    caption = "Thumbnail of Video" if len(file_object) > 1 else ""
+                    st.image(
+                        file_object[0]["image_url"]["url"], width=200, caption=caption
+                    )
+
+                elif is_video(uploaded_file.name):
+                    st.video(uploaded_file, autoplay=True)
             # Add user message to chat history
             st.session_state.messages.append({"role": "user", "content": content})
 
