@@ -6,7 +6,7 @@ from src.utils import is_image, is_video, encode_image, encode_video
 def file_upload():
     # Sidebar header
     st.sidebar.header("Upload Files")
-    uploaded_file = None
+    uploaded_file, file_object = None, None
 
     # File uploader with improved grammar and standardized code
     uploaded_file = st.sidebar.file_uploader(
@@ -18,18 +18,18 @@ def file_upload():
         # check if the file is image or video
         if is_image(uploaded_file.name):
             st.sidebar.image(uploaded_file, use_column_width=True)
-            image_object = encode_image(uploaded_file)
-            return uploaded_file, [image_object]
+            file_object = [encode_image(uploaded_file)]
 
         elif is_video(uploaded_file.name):
-            st.sidebar.video(uploaded_file)
-            video_object = encode_video(uploaded_file)
-            return uploaded_file, video_object
+            with st.sidebar.status("Processing video..."):
+                file_object = encode_video(uploaded_file)
+                st.sidebar.video(uploaded_file)
         else:
             st.sidebar.warning(
                 "Unsupported file type. Please upload an image or video file."
             )
-    return None, None
+
+    return uploaded_file, file_object
 
 
 def header():
@@ -53,19 +53,23 @@ def header():
 
     st.markdown(
         """
-        <img src="https://azure.microsoft.com/en-us/blog/wp-content/uploads/2024/05/Azure_Blog_Isometric_Illustration-12_1260x708.jpg" class="center-cropped">
+        <img src="https://github.com/user-attachments/assets/f648d3bc-fd96-4102-9302-7d549fcf5eaa" class="center-cropped">
         """,
         unsafe_allow_html=True,
     )
 
     st.markdown(
-        "<h1 style='text-align: center;'>Chat with Phi-3-vision-128k-instruct</h1>",
+        "<h1 style='text-align: center;'>Chat with Vision LLM</h1>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<h5 style='text-align: center;'>A GPT-4V Level MLLM for Single Image, Multi Image and Video on Your Phone</h5>",
         unsafe_allow_html=True,
     )
 
     st.markdown(
         "<div style='text-align: center; margin-bottom:4'>"
-        "Phi-3-vision is a lightweight, state-of-the-art 4.2 billion parameter multimodal model with language and vision capabilities, available with a 128k context length. <a href='https://huggingface.co/microsoft/Phi-3-vision-128k-instruct' target='_blank'>Read more</a>"
+        "<b>MiniCPM-V 2.6</b> is the latest and most capable model in the MiniCPM-V series. <a href='https://huggingface.co/openbmb/MiniCPM-V-2_6' target='_blank'>Read more</a>"
         "<br>"
         "<p>Made with ❤️ by <a href='https://github.com/bhimrazy' target='_blank'>Bhimraj Yadav</a></p>"
         "</div>",
