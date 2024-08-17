@@ -1,15 +1,21 @@
 import base64
+import concurrent.futures
 import os
 import re
 from io import BytesIO
+from typing import List
 
 import requests
 from decord import VideoReader, cpu
-from litserve.specs.openai import ChatCompletionRequest, ChatMessage
+from litserve.specs.openai import ChatCompletionRequest
 from PIL import Image
-import concurrent.futures
 
-from src.config import IMAGE_EXTENSIONS, MAX_NUM_FRAMES, VIDEO_EXTENSIONS
+from src.config import (
+    IMAGE_EXTENSIONS,
+    MAX_NUM_FRAMES,
+    VIDEO_EXTENSIONS,
+    SYSTEM_MESSAGE,
+)
 
 
 def get_file_extension(filename):
@@ -102,12 +108,24 @@ def encode_image(image_source):
         return None
 
 
+def prepare_content_with_images(content: str, images: List[object]):
+    """Prepare content with images."""
+    content = [
+        {
+            "type": "text",
+            "text": content,
+        },
+        *images,
+    ]
+    return content
+
+
 def encode_video(video):
     """Encode a video to a list of base64 data URLs.
 
     Adapted from: https://huggingface.co/spaces/openbmb/MiniCPM-V-2_6/blob/52bef569e63422a5c3e5913b148af1be9a6d5188/app.py#L188
     """
-    print("Got video", video)
+
     def uniform_sample(l, n):
         gap = len(l) / n
         idxs = [int(i * gap + gap / 2) for i in range(n)]
@@ -122,13 +140,10 @@ def encode_video(video):
     if len(frame_idx) > MAX_NUM_FRAMES:
         frame_idx = uniform_sample(frame_idx, MAX_NUM_FRAMES)
     video = vr.get_batch(frame_idx).asnumpy()
-    # video = [Image.fromarray(v.astype("uint8")) for v in video]
-    # video = [encode_image(v) for v in video]
 
     def process_frame(frame):
-        print("processing frame", frame.shape)
         return encode_image(Image.fromarray(frame.astype("uint8")))
-    print("Processing video frames...")
+
     # Use ThreadPoolExecutor to parallelize the encoding process
     with concurrent.futures.ThreadPoolExecutor() as executor:
         video = list(executor.map(process_frame, video))
@@ -138,36 +153,31 @@ def encode_video(video):
 
 def parse_messages(request: ChatCompletionRequest):
     """
-    Parse messages from a ChatCompletionRequest object, extracting text content and images.
-
-    Parameters:
-    request (ChatCompletionRequest): The request object containing messages.
-
-    Returns:
-    Tuple[List[ChatMessage], List[Image]]: A tuple containing a list of ChatMessage objects with updated content
-    and a list of PIL Image objects representing the images extracted from the messages.
+    Parse messages from a ChatCompletionRequest object.
     """
     messages = []
-    images = []
+    system_prompt = SYSTEM_MESSAGE
 
     for message in request.messages:
-        if isinstance(message.content, list):
-            text_content = ""
+        content = message.content
 
+        if message.role == "system":
+            system_prompt = content
+            continue
+
+        if isinstance(content, list):
+            prompt = ""
+            images = []
             for content_item in message.content:
                 if content_item.type == "text":
-                    text_content += content_item.text
+                    prompt = content_item.text
                 elif content_item.type == "image_url":
-                    image_url = content_item.image_url
+                    image_url = content_item.image_url.url
                     if image_url:
                         image = read_image(image_url)
                         if image:
                             images.append(image)
-            messages.append(ChatMessage(role=message.role, content=text_content))
-        else:
-            messages.append(message)
+            content = images + [prompt]
+        messages.append({"role": message.role, "content": content})
 
-    # dump to json
-    messages = [message.model_dump_json(exclude_none=True) for message in messages]
-    print(messages)
-    return messages, images
+    return system_prompt, messages
