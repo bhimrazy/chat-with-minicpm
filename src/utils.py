@@ -43,14 +43,14 @@ def read_image(source):
     try:
         if re.match(r"^https?://", source):
             # It's a real image URL
-            return Image.open(requests.get(source, stream=True).raw)
+            return Image.open(requests.get(source, stream=True).raw).convert("RGB")
         elif re.match(r"^data:image/.+;base64,", source):
             # It's a base64 image URL
             base64_image = source.split(",")[1]
             image_data = base64.b64decode(base64_image)
-            return Image.open(BytesIO(image_data))
+            return Image.open(BytesIO(image_data)).convert("RGB")
         else:
-            return Image.open(source)
+            return Image.open(source).convert("RGB")
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
@@ -74,7 +74,7 @@ def encode_image(image_source):
         elif isinstance(image_source, Image.Image):
             image = image_source
         else:
-            image = Image.open(image_source)
+            image = Image.open(image_source).convert("RGB")
 
         # resize to max_size
         max_size = 448 * 16
@@ -175,9 +175,13 @@ def parse_messages(request: ChatCompletionRequest):
                     image_url = content_item.image_url.url
                     if image_url:
                         image = read_image(image_url)
+                        # resize if height is greater than 1080
+                        if image.height > 1080:
+                            image = image.resize(
+                                (int(image.width * 1080 / image.height), 1080)
+                            )
                         if image:
                             images.append(image)
             content = images + [prompt]
         messages.append({"role": message.role, "content": content})
-
     return system_prompt, messages
