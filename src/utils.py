@@ -156,7 +156,7 @@ def parse_messages(request: ChatCompletionRequest):
     Parse messages from a ChatCompletionRequest object.
     """
     messages = []
-    system_prompt = SYSTEM_MESSAGE
+    system_prompt = SYSTEM_MESSAGE["content"]
 
     for message in request.messages:
         content = message.content
