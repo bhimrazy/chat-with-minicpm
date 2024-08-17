@@ -3,11 +3,7 @@ from typing import Tuple
 import litserve as ls
 import torch
 from litserve.specs.openai import ChatCompletionRequest
-from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
-    BitsAndBytesConfig
-)
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.utils import parse_messages
 
@@ -16,20 +12,12 @@ class MiniCPMVLitAPI(ls.LitAPI):
     def setup(self, device):
         model_id = "openbmb/MiniCPM-V-2_6-int4"
 
-        # specify how to quantize the model
-        quantization_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             device_map=device,
             trust_remote_code=True,
             attn_implementation="sdpa",
             torch_dtype=torch.bfloat16,
-            # quantization_config=quantization_config,
         )
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 
