@@ -6,6 +6,7 @@ openai
 peft
 Pillow
 sentencepiece
+streamlit
 timm
 torch
 transformers
