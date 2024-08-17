@@ -75,7 +75,7 @@ def main():
         with st.chat_message("assistant"):
             messages = [SYSTEM_MESSAGE, *st.session_state.messages]
             stream = client.chat.completions.create(
-                model="llama-3.1-8b-instant", messages=messages, stream=True
+                model=MODEL, messages=messages, stream=True
             )
             response = st.write_stream(stream)
 
