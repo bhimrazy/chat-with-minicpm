@@ -1,5 +1,6 @@
 accelerate
 bitsandbytes
+decord
 litserve
 openai
 peft
