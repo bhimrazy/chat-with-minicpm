@@ -22,7 +22,7 @@ class MiniCPMVLitAPI(ls.LitAPI):
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 
         # set model to eval mode
-        self.model.eval().to(device)
+        self.model.eval()
 
     def decode_request(self, request: ChatCompletionRequest, context):
         context["params"] = {
@@ -31,6 +31,7 @@ class MiniCPMVLitAPI(ls.LitAPI):
             "top_p": request.top_p or 0.8,
             "top_k": 100,
             "repetition_penalty": 1.05,
+            "max_slice_nums": 1,
         }
 
         # parse messages
@@ -44,7 +45,6 @@ class MiniCPMVLitAPI(ls.LitAPI):
             msgs=messages,
             tokenizer=self.tokenizer,
             sampling=True,
-            temperature=context["temperature"],
             stream=True,
             system_prompt=system_prompt,
             **context["params"],
