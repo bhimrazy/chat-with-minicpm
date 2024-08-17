@@ -63,15 +63,11 @@ def header():
         unsafe_allow_html=True,
     )
     st.markdown(
-        "<h5 style='text-align: center;'>A GPT-4V Level MLLM for Single Image, Multi Image and Video on Your Phone</h5>",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
         "<div style='text-align: center; margin-bottom:4'>"
+        "<h5 style='text-align: center;'>A GPT-4V Level MLLM for Single Image, Multi Image and Video on Your Phone</h5>"
         "<b>MiniCPM-V 2.6</b> is the latest and most capable model in the MiniCPM-V series. <a href='https://huggingface.co/openbmb/MiniCPM-V-2_6' target='_blank'>Read more</a>"
         "<br>"
-        "<p>Made with ❤️ by <a href='https://github.com/bhimrazy' target='_blank'>Bhimraj Yadav</a></p>"
+        # "<p>Made with ❤️ by <a href='https://github.com/bhimrazy' target='_blank'>Bhimraj Yadav</a></p>"
         "</div>",
         unsafe_allow_html=True,
     )
