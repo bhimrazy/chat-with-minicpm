@@ -1,5 +1,4 @@
-import os
-from threading import Thread
+from typing import Tuple
 
 import litserve as ls
 import torch
@@ -7,75 +6,67 @@ from litserve.specs.openai import ChatCompletionRequest
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    BitsAndBytesConfig,
-    TextIteratorStreamer,
+    BitsAndBytesConfig
 )
-from utils import parse_messages
 
-os.environ["HF_DATASETS_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
+from src.utils import parse_messages
 
 
-class MiniCPMLitAPI(ls.LitAPI):
+class MiniCPMVLitAPI(ls.LitAPI):
     def setup(self, device):
-        model_id = "openbmb/MiniCPM-V-2"
+        model_id = "openbmb/MiniCPM-V-2_6-int4"
+
         # specify how to quantize the model
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16,
         )
+
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             device_map=device,
             trust_remote_code=True,
-            torch_dtype="auto",
-            quantization_config=quantization_config,
-        ).to(device)
+            attn_implementation="sdpa",
+            torch_dtype=torch.bfloat16,
+            # quantization_config=quantization_config,
+        )
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 
         # set model to eval mode
-        self.model.eval()
+        self.model.eval().to(device)
 
     def decode_request(self, request: ChatCompletionRequest, context):
-        context["temperature"] = request.temperature or 0.7
-        context["max_tokens"] = request.max_tokens if request.max_tokens else 1024
-        context["top_p"] = request.top_p
+        context["params"] = {
+            "temperature": request.temperature or 0.7,
+            "max_new_tokens": request.max_tokens if request.max_tokens else 1024,
+            "top_p": request.top_p or 0.8,
+            "top_k": 100,
+            "repetition_penalty": 1.05,
+        }
 
         # parse messages
-        messages, images = parse_messages(request)
+        system_prompt, messages = parse_messages(request)
+        return system_prompt, messages
 
-        model_inputs = {
-            "image": images[0] if images else None,
-            "messages": messages,
-        }
-        return model_inputs
-
-    def predict(self, model_inputs: dict, context):
-        # streaming
-        streamer = TextIteratorStreamer(
-            self.tokenizer,
-            skip_prompt=True,
-            skip_special_tokens=True,
-            clean_up_tokenization_spaces=False,
-        )
-
-        # Run the generation in a separate thread, so that we can fetch the generated text in a non-blocking way.
-        generation_kwargs = dict(
-            **model_inputs,
-            streamer=streamer,
-            context=None,
+    def predict(self, inputs: Tuple, context):
+        system_prompt, messages = inputs
+        res = self.model.chat(
+            image=None,
+            msgs=messages,
+            tokenizer=self.tokenizer,
             sampling=True,
             temperature=context["temperature"],
-            max_new_tokens=context["max_tokens"],
+            stream=True,
+            system_prompt=system_prompt,
+            **context["params"],
         )
-        thread = Thread(target=self.model.generate, kwargs=generation_kwargs)
-        thread.start()
-        for text in streamer:
+
+        for text in res:
             yield text
 
 
 if __name__ == "__main__":
-    api = MiniCPMLitAPI()
+    api = MiniCPMVLitAPI()
     server = ls.LitServer(api, spec=ls.OpenAISpec())
     server.run(port=8000)
