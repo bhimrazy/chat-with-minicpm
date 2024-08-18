@@ -8,7 +8,7 @@
 
 ## Overview
 
-**Chat with Vision LLM** is a GPT-4V-level multi-modal language model (MLLM) designed to handle single image, multi-image, and video inputs on your mobile device. Powered by [**MiniCPM-V 2.6**](https://huggingface.co/openbmb/MiniCPM-V-2_6), this is the most advanced model in the MiniCPM-V series, delivering cutting-edge performance and versatility for your applications.
+**MiniCPM-V 2.6** is a GPT-4V-level multi-modal language model (MLLM) designed to handle single image, multi-image, and video inputs on your mobile device. Powered by [**MiniCPM-V 2.6**](https://huggingface.co/openbmb/MiniCPM-V-2_6), this is the most advanced model in the MiniCPM-V series, delivering cutting-edge performance and versatility for your applications.
 
 ## Getting Started
 
