@@ -1,5 +1,10 @@
-# Chat with Vision LLM
-
+<div align="center">
+  
+  <img src="https://github.com/user-attachments/assets/fb9a7a78-57fc-493a-8961-e91c1786e6c5" alt="Chat with MiniCPM-V 2.6, a GPT-4V Level MLLM" width="100" height="100">
+  <h1>Chat with MiniCPM-V 2.6, a GPT-4V Level MLLM</h1>
+  <img src="https://github.com/user-attachments/assets/ddb1acf9-5dd3-44b3-b1a4-96d5fb552d95" alt="Chat with MiniCPM-V 2.6, a GPT-4V Level MLLM" width="640" height="360">
+  <br/>
+</div>
 
 ## Overview
 
