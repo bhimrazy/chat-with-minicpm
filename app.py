@@ -5,10 +5,6 @@ from src.config import MODEL, SYSTEM_MESSAGE
 from src.ui_components import file_upload, header
 from src.utils import prepare_content_with_images, is_image, is_video
 
-IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
-VIDEO_EXTENSIONS = {".mp4", ".mkv", ".mov", ".avi", ".flv", ".wmv", ".webm", ".m4v"}
-
-
 # Define path to store chat history file
 CHAT_HISTORY_FILE = "messages.json"
 IMAGE_DIR = "uploaded_images"
