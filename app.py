@@ -5,11 +5,6 @@ from src.config import MODEL, SYSTEM_MESSAGE
 from src.ui_components import file_upload, header
 from src.utils import prepare_content_with_images, is_image, is_video
 
-# Define path to store chat history file
-CHAT_HISTORY_FILE = "messages.json"
-IMAGE_DIR = "uploaded_images"
-
-
 def main():
     # Title section
     header()
